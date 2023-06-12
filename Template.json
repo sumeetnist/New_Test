@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {"activitylogalerts_VM_Health_Alert_name": {
+            "defaultValue": "VM-Health-Alert",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "microsoft.insights/activitylogalerts",
+            "apiVersion": "2020-10-01",
+            "name": "[parameters('activitylogalerts_VM_Health_Alert_name')]",
+            "location": "global",
+            "properties": {
+                "scopes": [
+                    "/subscriptions/41789fcc-7af0-45bd-8a60-8b88b0b43edd"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "ServiceHealth"
+                        },
+                        {
+                            "anyOf": [
+                                {
+                                    "field": "properties.incidentType",
+                                    "equals": "Incident"
+                                },
+                                {
+                                    "field": "properties.incidentType",
+                                    "equals": "Maintenance"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "properties.impactedServices[*].ServiceName",
+                            "containsAny": [
+                                "Virtual Machines"
+                            ]
+                        },
+                        {
+                            "field": "properties.impactedServices[*].ImpactedRegions[*].RegionName",
+                            "containsAny": [
+                                "East US",
+                                "West US"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": []
+                },
+                "enabled": true,
+                "description": "This Alerts will show VM health details"
+            }
+        }
+    ]
+}
